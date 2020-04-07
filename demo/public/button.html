@@ -1,0 +1,147 @@
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Button Page" />
+<meta name="twitter:description" content="Generate and Share Moneybutton Landing Pages" />
+<meta name="twitter:image" content="https://button.bitdb.network/buttonpage.png" />
+<meta property="og:url" content="https://button.bitdb.network" />
+<meta property="og:type"   content="website" />
+<meta property="og:title" content="Button Page" />
+<meta property="og:description" content="Generate and Share Moneybutton Landing Pages" />
+<meta property="og:image" content="https://bitcom.bitdb.network/buttonpage.png" />
+<title>Button Page</title>
+<style>
+body { padding-top: 100px; }
+.container { display: flex; flex-direction: column; width: 500px; max-width: 100%; margin: 0 auto; }
+.container input[type=text] { flex-grow: 1; margin-bottom: 10px; padding: 10px; }
+h1 { font-family: Georgia; display: block; text-align: center; margin: 0; }
+pre { background: rgba(0,0,0,0.05); padding: 10px; }
+#b { margin-top: 10px; }
+.sub { text-align: center; margin: 10px 10px 20px;; font-family: Menlo, monaco, Courier; font-size: 12px; }
+.sub pre { text-align: left; font-size; 12px; padding: 20px;}
+#set a { font-size: 10px; padding: 10px; display: block; font-family: Menlo, monaco, Courier; }
+a { color: red; }
+hr { background: rgba(0,0,0,0.1); }
+.hidden { display: none !important; }
+footer a { color: gray; }
+textarea#raw {
+  padding: 10px; font-size: 12px; width: 100%; height: 200px; box-sizing: border-box;
+  outline: none;
+  background: cornsilk;
+  border: none;
+}
+#sent {
+  padding: 10px;
+  font-family: sans-serif;
+  font-size: 12px;
+  margin: 10px;
+}
+#label {
+  font-size: 12px;
+  font-family: sans-serif;
+  padding: 10px;
+  display: block;
+  background: cornsilk;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+</style>
+<script src="debounce.min.js"></script>
+<script src="https://www.moneybutton.com/moneybutton.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/ace/1.4.1/ace.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/ace/1.4.1/mode-json.js"></script>
+<script>
+var h = null
+var editor
+if(window.location.hash) {
+  h = window.location.hash.slice(1)
+}
+document.addEventListener("DOMContentLoaded", function(e) {
+  var j
+  if (h) {
+    j = JSON.parse(atob(h))
+  } else {
+    j = {
+      to: "1GnrEMGfSVxEZ96BUtEiGNK3r6hTbQBvTE",
+      editable: true,
+      currency: "USD",
+      type: "tip",
+    }
+  }
+  j.onPayment = function(r) {
+    console.log("success", r)
+    document.querySelector("#sent").innerHTML = "<a target='_blank' href='https://whatsonchain.com/tx/"+r.txid+"'>Transaction sent: " + r.txid + "</a>"
+    document.querySelector("#raw").value = r.rawtx
+    document.querySelector("#raw").classList.remove("hidden")
+    document.querySelector("#label").classList.remove("hidden")
+  }
+  j.onError = function(err) {
+    console.log("error", err)
+  }
+  document.querySelector("#reveal").addEventListener("click", function(e) {
+    e.preventDefault();
+    document.querySelector(".hidden").classList.remove("hidden")
+  })
+  console.log(j)
+  editor = ace.edit("editor");
+  editor.setTheme("ace/theme/mono_industrial");
+  editor.session.setMode("ace/mode/json");
+  editor.setShowPrintMargin(false);
+  editor.setOptions({
+    maxLines: Infinity,
+    minLines: 3,
+    tabSize: 2,
+    useSoftTabs: true
+  })
+  editor.setValue(JSON.stringify(j, null, 2))
+  editor.clearSelection()
+  moneyButton.render(document.querySelector("#b"), j)
+  var func = debounce(function() {
+    var query = editor.getValue();
+    var q = btoa(query)
+    try {
+      var jj = JSON.parse(query)
+      jj.onPayment = function(r) {
+        console.log("success", r)
+        console.log("#sent = ", document.querySelector("#sent"))
+        console.log("#raw = ", document.querySelector("#raw"))
+        document.querySelector("#sent").innerHTML = "<a target='_blank' href='https://whatsonchain.com/tx/"+r.txid+"'>Transaction sent: " + r.txid + "</a>"
+        document.querySelector("#raw").value = r.rawtx
+        document.querySelector("#raw").classList.remove("hidden")
+        document.querySelector("#label").classList.remove("hidden")
+      }
+      jj.onError = function(err) {
+        console.log("error", err)
+      }
+      history.pushState(null, null, window.location.origin + "#" + q)
+      moneyButton.render(document.querySelector("#b"), jj)
+    } catch (e) {
+      console.log("Error = ", e)
+    }
+  }, 1000);
+  editor.getSession().on('change', func)
+})
+</script>
+</head>
+<body>
+<h1>Button Page</h1>
+<div class='sub'>Generate and Share <a href='https://moneybutton.com'>Moneybutton</a> Landing Pages</div>
+<div class='container'>
+  <div id='editor'></div>
+  <div id='sent'></div>
+  <div id='label' class='hidden'>Raw Transaction</div>
+  <textarea id='raw' class='hidden'></textarea>
+  <div id='b'></div>
+  <hr>
+  <footer class='sub'>
+    <a href="#" id='reveal'>How to generate the URL programmatically</a>
+    <pre class='hidden'>
+The URL is:
+
+var str = JSON.stringify(payload);  // Moneybutton payload
+var b64 = btoa(str);                // base64 encoded
+var url = "https://button.bitdb.network/#" + b64;</pre>
+  </footer>
+</div>
+</body>
+</html>
