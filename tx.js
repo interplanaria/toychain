@@ -55,7 +55,7 @@ class Tx {
     })
   }
   get(o) {
-    if (o && o.id) {
+    if (o && ("id" in o)) {
       if(Array.isArray(o.id)) {
         const sql = `SELECT * FROM tx WHERE id IN (${o.id.map(() => '?').join(',')})`;
         return this.DB.prepare(sql).all(o.id);

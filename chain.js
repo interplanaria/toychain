@@ -90,7 +90,7 @@ class Chain {
     this.DB.prepare(`UPDATE chain SET spent=1 WHERE id IN (${o.parent.map(() => '?').join(',')})`).run(o.parent)
   }
   get(q) {
-    if (q) {
+    if (q && ('id' in q)) {
       if (Array.isArray(q.id)) {
         return this.DB.prepare(`SELECT * FROM chain WHERE id IN (${q.id.map(() => '?').join(',')})`).all(q.id);
       } else {

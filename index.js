@@ -110,8 +110,22 @@ class Toychain {
   async push(o) {
     await this.tx.push(o)
   }
+  address(o) {
+    return this.wallet.get(o)
+  }
   get(o) {
-    return this.chain.get(o)
+    let chainResult = this.chain.get(o)
+    if (o && o.verbose) {
+      let txResult = this.tx.get(o)
+      let m = {};
+      txResult.forEach((r) => {
+        m[r.id] = r;
+      })
+      chainResult.forEach((r) => {
+        r.rawtx = m[r.tx]
+      })
+    }
+    return chainResult;
   }
   charge(address) {
     Util.charge(address).then(() => {
