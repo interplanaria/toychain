@@ -77,16 +77,35 @@ class Tx {
           console.log("already sent", item.id)
         } else {
           console.log('pushing', raw)
-          try {
-            let res = await axios.post('https://api.whatsonchain.com/v1/bsv/main/tx/raw', { txhex: raw })
-            console.log("Updating to sent:", item.id)
-            // Change to sent
-            this.DB.prepare("UPDATE tx SET sent=1 WHERE id=?").run(item.id)
-            counter++;
-          } catch (e) {
-            console.log("Error", e)
-            console.log("Sent", counter)
-            process.exit();
+          if (o && o.rpcUrl) {
+            try {
+              const r = await axios({
+                method: 'post',
+                url: o.rpcUrl,
+                data: {
+                  method: 'sendrawtransaction',
+                  params: [raw],
+                },
+              })
+              console.log("Updating to sent:", item.id)
+              this.DB.prepare("UPDATE tx SET sent=1 WHERE id=?").run(item.id)
+            } catch (e) {
+              console.log("Error", e)
+              console.log("Sent", counter)
+              process.exit();
+            }
+          } else {
+            try {
+              let res = await axios.post('https://api.whatsonchain.com/v1/bsv/main/tx/raw', { txhex: raw })
+              console.log("Updating to sent:", item.id)
+              // Change to sent
+              this.DB.prepare("UPDATE tx SET sent=1 WHERE id=?").run(item.id)
+              counter++;
+            } catch (e) {
+              console.log("Error", e)
+              console.log("Sent", counter)
+              process.exit();
+            }
           }
         }
       }
