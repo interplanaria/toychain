@@ -89,6 +89,7 @@ class Tx {
               })
               console.log("Updating to sent:", item.id)
               this.DB.prepare("UPDATE tx SET sent=1 WHERE id=?").run(item.id)
+              counter++;
             } catch (e) {
               console.log("Error", e)
               console.log("Sent", counter)
