@@ -78,7 +78,14 @@ class Tx {
         } else {
           console.log('pushing', raw)
           try {
-            let res = await axios.post('https://api.whatsonchain.com/v1/bsv/main/tx/raw', { txhex: raw })
+            if (o && o.rpc) {
+              let res = await axios.post(o.rpc, {
+                  method: 'sendrawtransaction',
+                  params: [raw],
+              })
+            } else {
+              let res = await axios.post('https://api.whatsonchain.com/v1/bsv/main/tx/raw', { txhex: raw })
+            }
             console.log("Updating to sent:", item.id)
             // Change to sent
             this.DB.prepare("UPDATE tx SET sent=1 WHERE id=?").run(item.id)
