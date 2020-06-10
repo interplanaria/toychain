@@ -68,32 +68,33 @@ class Tx {
   }
   async push(o) {
     let items = this.get(o)
-    let fitems = items.filter(item => !item.genesis)
     let counter = 0;
-    console.log("Pushing", fitems.length)
-    for(let item of fitems) {
-      let raw = item.tx
-      if (o && o.except && o.except.includes(item.id)) {
-        console.log("already sent", item.id)
-      } else {
-        console.log('pushing', raw)
-        try {
-          if (o && o.rpc) {
-            let res = await axios.post(o.rpc, {
-                method: 'sendrawtransaction',
-                params: [raw],
-            })
-          } else {
-            let res = await axios.post('https://api.whatsonchain.com/v1/bsv/main/tx/raw', { txhex: raw })
+    console.log("Pushing", items.length)
+    for(let item of items) {
+      if (!item.genesis) {
+        let raw = item.tx
+        if (o && o.except && o.except.includes(item.id)) {
+          console.log("already sent", item.id)
+        } else {
+          console.log('pushing', raw)
+          try {
+            if (o && o.rpc) {
+              let res = await axios.post(o.rpc, {
+                  method: 'sendrawtransaction',
+                  params: [raw],
+              })
+            } else {
+              let res = await axios.post('https://api.whatsonchain.com/v1/bsv/main/tx/raw', { txhex: raw })
+            }
+            console.log("Updating to sent:", item.id)
+            // Change to sent
+            this.DB.prepare("UPDATE tx SET sent=1 WHERE id=?").run(item.id)
+            counter++;
+          } catch (e) {
+            console.log("Error", e)
+            console.log("Sent", counter)
+            process.exit();
           }
-          console.log("Updating to sent:", item.id)
-          // Change to sent
-          this.DB.prepare("UPDATE tx SET sent=1 WHERE id=?").run(item.id)
-          counter++;
-        } catch (e) {
-          console.log("Error", e)
-          console.log("Sent", counter)
-          process.exit();
         }
       }
     }
