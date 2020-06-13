@@ -18,7 +18,7 @@ tx.clone(<bsv.Transaction object>)                              // Clone a trans
 class Tx {
   constructor(wallet) {
     if (wallet.id) {
-      let dbpath = path.resolve(wallet.meta.storage.path, "db/" + wallet.id)
+      let dbpath = wallet.meta.storage.fullPath
       if (!fs.existsSync(dbpath)) {
         fs.mkdirSync(dbpath, { recursive: true })
       }

@@ -101,7 +101,9 @@ Toychain.get({ xpriv: <xpriv> })  // Get a toychain by xpriv
 ****************************************************************************************/
 class Toychain {
   constructor(o) {
-    if (!o.storage) o.storage = { path: process.cwd() }
+    if (!o.storage) o.storage = {}
+    if (!o.storage.path) o.storage.path = process.cwd()
+    if (!o.storage.name) o.storage.name = 'db'
     this.wallet = new Wallet(o)
     this.miner = new Miner(o)
     this.chain = new Chain(this.wallet, this.miner);
