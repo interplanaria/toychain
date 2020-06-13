@@ -41,7 +41,8 @@ class Wallet {
       path: o.path
     })
     // Generate a key database
-    let dbpath = path.resolve(o.storage.path, "db/" + this.id)
+    this.meta.storage.fullPath = path.resolve(o.storage.path, o.storage.name + "/" + this.id)
+    let dbpath = this.meta.storage.fullPath
     if (!fs.existsSync(dbpath)) {
       fs.mkdirSync(dbpath, { recursive: true })
     }
